@@ -1,0 +1,23 @@
+:root {
+  --color-bg: #343D4B;
+  --color-primary: #fff;
+  --color-primary-inverted: #000000;
+  --color-bg-card: #272E37;
+  --color-bg-main: #222831;
+  --gradient: linear-gradient(130.70deg, #90D9E0E6 0.195%, #5460E6E6 100%);
+  --gradient-inverted: linear-gradient(130.70deg, #5460E6E6 0.195%, #90D9E0E6 100%);
+  --font: "Montserrat", sans-serif;
+}
+
+body {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: var(--font);
+  color: var(--color-primary);
+  background-color: var(--color-bg);
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+}
