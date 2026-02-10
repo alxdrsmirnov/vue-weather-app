@@ -21,5 +21,6 @@ function getCity(city) {
   padding: 56px;
   border-radius: 25px;
   background-color: var(--color-bg-main);
+  width: 420px;
 }
 </style>

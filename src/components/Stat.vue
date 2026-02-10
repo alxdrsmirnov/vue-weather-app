@@ -19,7 +19,8 @@ defineProps({
   font-size: 28px;
   line-height: 34px;
   letter-spacing: 0%;
-  gap: 16px
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
 .stat-name {
