@@ -1,28 +1,40 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import LocationIcon from '../icons/LocationIcon.vue'
 import Button from './Button.vue'
+import Input from './Input.vue'
+
+const isEditMode = ref(false)
+const city = ref(localStorage['CACHED_CITY'] || 'Smolensk')
 
 const emit = defineEmits(['selectCity'])
 
-const select = () => emit('selectCity', 'London')
+const select = () => {
+  emit('selectCity', city.value)
+  localStorage['CACHED_CITY'] = city.value
+  isEditMode.value = false
+}
 
-const isEditMode = ref(false)
+onMounted(() => emit('selectCity', city.value))
 </script>
 
 <template>
   <div class="select-city">
     <Button
       v-if="!isEditMode"
-      @click="isEditMode = !isEditMode"
+      @click="isEditMode = true"
       class="edit-button"
     >
-      <LocationIcon style="margin-right: 10px;" />
+      <LocationIcon class="edit-icon" />
       Изменить город
     </Button>
 
     <template v-else>
-      <input type="text">
+      <Input
+        v-model="city"
+        placeholder="Введите город"
+        @keyup.enter="select"
+      />
 
       <Button @click="select">
         Сохранить
@@ -45,14 +57,9 @@ const isEditMode = ref(false)
   justify-content: center;
 }
 
-input {
-  border-radius: 10px;
-  box-shadow: 1px 2px 4px 0px rgba(34, 40, 49, 1);
-  background: rgba(39, 46, 55, 1);
-  width: 260px;
-  height: 52px;
-  border: none;
-  color: white;
-  font-size: 18px;
+.edit-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 10px;
 }
 </style>
