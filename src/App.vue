@@ -1,15 +1,11 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { getEnvParam } from './utils/get.envs'
-import Stat from './components/Stat.vue'
-import Error from './components/Error.vue'
-import CitySelect from './components/CitySelect.vue'
-import DayCard from './components/DayCard.vue'
+import PaneLeft from './components/PaneLeft.vue'
+import PaneRight from './components/PaneRight.vue'
 
 const API_ENDPOINT = getEnvParam('VITE_API_ENDPOINT')
 const API_KEY = getEnvParam('VITE_API_KEY')
-
-const data = ref()
 
 const error = ref()
 const errorsMap = new Map([
@@ -19,12 +15,22 @@ const errorMessage = computed(() => {
   return errorsMap.get(error?.value?.error?.code) ?? error?.value?.error?.message
 })
 
-const stats = computed(() => data.value ? [
-  { label: 'Температура', stat: data.value.current.temp_c + ' C' },
-  { label: 'Влажность', stat: data.value.current.humidity + ' %' },
-  { label: 'Облачность', stat: data.value.current.cloud + ' %' },
-  { label: 'Ветер', stat: data.value.current.wind_kph + ' км/ч' }
-] : [])
+const data = ref()
+const stats = computed(() => {
+  const fd = data.value?.forecast?.forecastday?.[activeDay.value]
+  if (!fd) return []
+
+  const avgCloud = Math.round(
+    fd.hour.reduce((sum, h) => sum + h.cloud, 0) / fd.hour.length
+  )
+
+  return [
+    { label: 'Температура', stat: fd.day.avgtemp_c + ' C' },
+    { label: 'Влажность', stat: fd.day.avghumidity + ' %' },
+    { label: 'Облачность', stat: avgCloud + ' %' },
+    { label: 'Ветер', stat: fd.day.maxwind_kph + ' км/ч' }
+  ]
+})
 
 const activeDay = ref(0)
 
@@ -38,6 +44,21 @@ const conditionToWeather = (code) => {
   if (code <= 1009) return 'cloud'
   return 'rain'
 }
+
+const selectedDay = computed(() => {
+  const fd = data.value?.forecast?.forecastday?.[activeDay.value]
+  if (!fd) return null
+
+  return {
+    city: data.value.location.name,
+    date: fd.date,
+    temp: Math.round(fd.day.avgtemp_c),
+    maxTemp: Math.round(fd.day.maxtemp_c),
+    minTemp: Math.round(fd.day.mintemp_c),
+    condition: fd.day.condition.text,
+    weather: conditionToWeather(fd.day.condition.code)
+  }
+})
 
 const forecastDays = computed(() =>
   (data.value?.forecast?.forecastday ?? []).map((fd, i) => ({
@@ -69,51 +90,23 @@ const getCityWeather = async (city) => {
 </script>
 
 <template>
-  <main class="main">
-    <Error v-if="error" :error="errorMessage" />
+  <main>
+    <PaneLeft :day="selectedDay" />
 
-    <div class="content">
-      <template v-if="!error">
-        <Stat
-          v-for="stat of stats"
-          v-bind="stat"
-        />
-
-        <div class="day-cards">
-          <DayCard
-            v-for="(fc, i) of forecastDays"
-            :key="fc.day"
-            v-bind="fc"
-            @click="activeDay = i"
-          />
-        </div>
-      </template>
-    </div>
-
-    <CitySelect @selectCity="getCityWeather" />
+    <PaneRight
+      :stats="stats"
+      :forecastDays="forecastDays"
+      :errorMessage="errorMessage"
+      @selectDay="(i) => activeDay = i"
+      @selectCity="getCityWeather"
+    />
   </main>
 </template>
 
 <style scoped>
-.main {
+main {
   display: flex;
-  flex-direction: column;
-  padding: 0 56px 56px 56px;
-  border-radius: 25px;
-  background-color: var(--color-bg-main);
-  width: 416px;
-  height: 620px;
-}
-
-.content {
-  flex: 1;
-  margin-top: 56px;
-}
-
-.day-cards {
-  margin-top: 52px;
-  display: flex;
-  flex-direction: row;
-  gap: 4px;
+  align-items: center;
+  justify-content: center;
 }
 </style>

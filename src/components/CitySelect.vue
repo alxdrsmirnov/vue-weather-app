@@ -15,6 +15,10 @@ const select = () => {
   isEditMode.value = false
 }
 
+const vFocus = {
+  mounted: (el) => el.focus()
+}
+
 onMounted(() => emit('selectCity', city.value))
 </script>
 
@@ -32,6 +36,7 @@ onMounted(() => emit('selectCity', city.value))
     <template v-else>
       <Input
         v-model="city"
+        v-focus
         placeholder="Введите город"
         @keyup.enter="select"
       />
